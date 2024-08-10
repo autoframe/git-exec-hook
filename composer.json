@@ -1,0 +1,34 @@
+{
+    "type": "library",
+    "name": "autoframe/git-exec-hook",
+    "description": "Http git hook call for action for fetch pull checkout commit push",
+    "license": "MIT",
+    "homepage": "https://github.com/autoframe",
+    "require": {
+        "php": ">=7.4",
+        "ext-json": "*"
+    },
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Nistor Alexandru Marius",
+            "homepage": "https://autoframe.ro",
+            "role": "Developer"
+        }
+    ],
+    "keywords": ["git hook", "git fetch", "git pull", "git checkout", "git commit", "git push"],
+    "autoload": {
+        "psr-4": {
+            "Autoframe\\GitExecHook\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Unit\\": "Tests/Unit"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6 || ^10"
+    }
+
+}
