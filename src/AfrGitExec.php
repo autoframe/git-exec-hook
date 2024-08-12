@@ -244,7 +244,7 @@ class AfrGitExec
         if (!$remote) {
             $remote = $this->gitOrigin();
         }
-        return $this->execCmd('pull -f '.$remote);
+        return $this->execCmd('pull -f ' . $remote);
     }
 
     public function gitFetch(string $remote = '-all'): array
@@ -252,7 +252,7 @@ class AfrGitExec
         if (!$remote) {
             $remote = $this->gitOrigin();
         }
-        return $this->execCmd('fetch '.$remote);
+        return $this->execCmd('fetch ' . $remote);
     }
 
     public function gitDiff(string $args = ''): array
@@ -392,6 +392,7 @@ class AfrGitExec
         $bOnMasterBranch = $this->isOnMasterBranch();
         $aLog = [['MasterBranchPreviouslySelected' => $bOnMasterBranch]];
 
+        $this->gitFetch();
         if (!$bOnMasterBranch) {
             $sCurrentBranch = $this->getCurrentBranchName();
             $aLog = array_merge($aLog, $this->gitAddCommitAndPush(
@@ -406,5 +407,45 @@ class AfrGitExec
         ));
     }
 
+    public function hookMasterCheckout(bool $bSaveCurrentChanges, string $sCommitText = '', bool $bPushToMaster = false): array
+    {
+        if (!$sCommitText) {
+            $sCommitText = gmdate('Y-m-d H:i:s') . ' GMT * ClassicFtpDriven...';
+        }
+        $this->gitFetch();
+
+        $bOnMasterBranch = $this->isOnMasterBranch();
+        $bModifiedOnServer = false;
+        $sStatus = implode(' ', $this->gitStatus()['gitOutputLines']);
+        if (strpos($sStatus, 'no changes added to commit') !== false) {
+            $bModifiedOnServer = true;
+        }
+        $aLog = [
+            ['SaveCurrentChanges' => $bSaveCurrentChanges],
+            ['MasterBranchPreviouslySelected' => $bOnMasterBranch],
+            ['ModifiedOnServer' => $bModifiedOnServer],
+        ];
+        if ($bSaveCurrentChanges && $bOnMasterBranch && $bModifiedOnServer && !$bPushToMaster) {
+            $this->gitCheckoutNewBranch('FilesOnMasterBranch' . date('ymd-hi'));
+        }
+        if ($bSaveCurrentChanges && $bModifiedOnServer) {
+            $sCurrentBranch = $this->getCurrentBranchName();
+            $aLog = array_merge($aLog, $this->gitAddCommitAndPush(
+                'Auto commit [' . $sCurrentBranch . ']' . $sCommitText,
+                $sCurrentBranch
+            ));
+
+        }
+
+        if ($bModifiedOnServer) {
+            sleep(2);
+            $this->gitFetch();
+        }
+
+        $aLog[] = $this->checkoutMasterBranch();
+        $aLog[] = $this->execCmd('reset --hard HEAD~1');
+        $aLog[] = $this->gitPull();
+        return $aLog;
+    }
 
 }
