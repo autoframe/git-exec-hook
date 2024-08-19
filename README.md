@@ -133,6 +133,7 @@ Create a new token for the repo: https://github.com/settings/tokens
 
     git rm --cached -r .  ⚠️ Remove every file from git's index.
     git reset --hard      ⚠️ Rewrite git's index to pick up all the new line endings.
+    git reset --hard HEAD~1 2>&1 ⚠️ Rollback commits back to head
 
 ---
 
